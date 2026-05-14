@@ -20,22 +20,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.audiofx.AudioEffect
-import com.android.axion.axionfx.AxionFxController
 
 class SessionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val sessionId = intent.getIntExtra(AudioEffect.EXTRA_AUDIO_SESSION, -1)
-        if (sessionId < 1) return
-
-        when (intent.action) {
-            AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION -> {
-                AxionFxService.start(context)
-                AxionFxController.attachSession(sessionId)
-                AxionFxService.instance?.restoreSettings()
-            }
-            AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION -> {
-                AxionFxController.detachSession(sessionId)
-            }
+        if (intent.action == AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION) {
+            AxionFxService.start(context)
         }
     }
 }
