@@ -67,6 +67,7 @@ object AxionFxController {
 
         sessions.values.forEach { effect ->
             try {
+                if (!effect.enabled) effect.enabled = true
                 val status = effect.setParameter(paramBytes, valueBytes)
                 Log.d(TAG, "setParam 0x${paramId.toString(16)}=$value status=$status")
             } catch (e: Exception) {
@@ -95,6 +96,8 @@ object AxionFxController {
     fun setEqEnabled(enabled: Boolean) = setParameter(0x200, if (enabled) 1 else 0)
     fun setEqBandLevel(band: Int, levelCentibels: Int) =
         setParameter(0x201, (band shl 16) or (levelCentibels and 0xFFFF))
+    fun setArbitraryEqBandLevel(band: Int, levelCentibels: Int) =
+        setParameter(0x202, (band shl 16) or (levelCentibels and 0xFFFF))
 
     fun setBassEnabled(enabled: Boolean) = setParameter(0x300, if (enabled) 1 else 0)
     fun setBassMode(mode: Int) = setParameter(0x301, mode)

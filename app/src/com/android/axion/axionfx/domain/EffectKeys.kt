@@ -24,6 +24,7 @@ object EffectKeys {
 
     const val EQ_ENABLED = "eq_enabled"
     const val EQ_BAND_PREFIX = "eq_band_"
+    const val ARBITRARY_EQ_BAND_PREFIX = "arbitrary_eq_band_"
 
     const val FIR_EQ_ENABLED = "fir_eq_enabled"
     const val FIR_EQ_BAND_PREFIX = "fir_eq_band_"

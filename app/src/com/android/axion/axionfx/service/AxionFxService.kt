@@ -209,6 +209,9 @@ class AxionFxService : Service() {
         AxionFxController.setOutputGain(prefs.getInt(KEY_OUTPUT_GAIN, 100))
         AxionFxController.setParameter(0x102, prefs.getInt("output_pan", 0))
 
+        for (i in 0..38) {
+            AxionFxController.setArbitraryEqBandLevel(i, prefs.getInt("${KEY_ARBITRARY_EQ_BAND_PREFIX}$i", 0))
+        }
         for (i in 0..9) {
             AxionFxController.setEqBandLevel(i, prefs.getInt("${KEY_EQ_BAND_PREFIX}$i", 0))
         }
@@ -319,6 +322,7 @@ class AxionFxService : Service() {
         const val KEY_MASTER_ENABLED = "master_enabled"
         const val KEY_EQ_ENABLED = "eq_enabled"
         const val KEY_EQ_BAND_PREFIX = "eq_band_"
+        const val KEY_ARBITRARY_EQ_BAND_PREFIX = "arbitrary_eq_band_"
         const val KEY_BASS_ENABLED = "bass_enabled"
         const val KEY_BASS_MODE = "bass_mode"
         const val KEY_BASS_GAIN = "bass_gain"

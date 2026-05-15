@@ -22,6 +22,7 @@
 namespace axionfx {
 
 constexpr float Equalizer::CENTER_FREQS[];
+constexpr int Equalizer::LEGACY_BAND_TO_RESPONSE[];
 
 void Equalizer::configure(float sampleRate) {
     mSampleRate = sampleRate;
@@ -35,6 +36,11 @@ void Equalizer::setBandLevel(int band, float dB) {
     dB = std::clamp(dB, MIN_GAIN_DB, MAX_GAIN_DB);
     mBandLevels[band] = dB;
     updateBand(band);
+}
+
+void Equalizer::setLegacyBandLevel(int band, float dB) {
+    if (band < 0 || band >= LEGACY_NUM_BANDS) return;
+    setBandLevel(LEGACY_BAND_TO_RESPONSE[band], dB);
 }
 
 float Equalizer::getBandLevel(int band) const {

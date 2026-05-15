@@ -46,6 +46,11 @@ class EffectInteractor(private val repo: EffectRepository) {
         AxionFxController.setEqBandLevel(band, value)
     }
 
+    fun setArbitraryEqBandLevel(band: Int, value: Int) {
+        repo.putInt("${EffectKeys.ARBITRARY_EQ_BAND_PREFIX}$band", value)
+        AxionFxController.setArbitraryEqBandLevel(band, value)
+    }
+
     fun setFirEqEnabled(enabled: Boolean) {
         repo.putBoolean(EffectKeys.FIR_EQ_ENABLED, enabled)
         AxionFxController.setFirEqEnabled(enabled)
@@ -243,6 +248,9 @@ class EffectInteractor(private val repo: EffectRepository) {
         setEqEnabled(EffectDefaults.EQ_ENABLED)
         for (i in 0..9) {
             setEqBandLevel(i, 0)
+        }
+        for (i in 0..38) {
+            setArbitraryEqBandLevel(i, 0)
         }
         setFirEqEnabled(EffectDefaults.FIR_EQ_ENABLED)
         for (i in 0..127) {

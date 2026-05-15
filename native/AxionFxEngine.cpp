@@ -113,7 +113,6 @@ void AxionFxEngine::setMasterEnabled(bool enabled) {
 }
 
 void AxionFxEngine::setParameter(int32_t paramId, int32_t value) {
-    ALOGI("setParameter paramId=0x%x value=%d", paramId, value);
     switch (paramId) {
         case PARAM_MASTER_ENABLE:
             mMasterEnabled = (value != 0);
@@ -133,6 +132,12 @@ void AxionFxEngine::setParameter(int32_t paramId, int32_t value) {
             mEqualizer.setEnabled(value != 0);
             break;
         case PARAM_EQ_BAND_LEVEL: {
+            int band = eqBandFromValue(value);
+            int levelCb = eqLevelFromValue(value);
+            mEqualizer.setLegacyBandLevel(band, static_cast<float>(levelCb) / 100.0f);
+            break;
+        }
+        case PARAM_EQ_ARBITRARY_BAND_LEVEL: {
             int band = eqBandFromValue(value);
             int levelCb = eqLevelFromValue(value);
             mEqualizer.setBandLevel(band, static_cast<float>(levelCb) / 100.0f);

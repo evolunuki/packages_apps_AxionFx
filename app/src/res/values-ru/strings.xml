@@ -45,7 +45,7 @@
     <!-- Effects navigation -->
     <string name="category_effects">Advanced Effects</string>
     <string name="nav_equalizer">Equalizer</string>
-    <string name="nav_equalizer_summary">10-band parametric equalizer</string>
+    <string name="nav_equalizer_summary">39-node arbitrary response equalizer</string>
     <string name="nav_fir_eq">FIR Equalizer</string>
     <string name="nav_fir_eq_summary">15-band phase-linear equalizer</string>
     <string name="nav_multiband">Multiband Compressor</string>
@@ -115,7 +115,7 @@
     <!-- Equalizer screen -->
     <string name="eq_category">Parametric EQ</string>
     <string name="eq_enable_title">Enable Equalizer</string>
-    <string name="eq_enable_summary">10-band parametric equalizer</string>
+    <string name="eq_enable_summary">39-node arbitrary response equalizer</string>
     <string name="eq_simple">Simple</string>
     <string name="eq_advanced">Advanced</string>
     <string name="eq_reset">Сброс</string>
