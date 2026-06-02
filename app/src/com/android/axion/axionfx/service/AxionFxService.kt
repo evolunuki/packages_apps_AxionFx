@@ -27,7 +27,6 @@ import android.content.SharedPreferences
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
-import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
@@ -38,7 +37,7 @@ import com.android.axion.axionfx.AxionFxController
 import com.android.axion.axionfx.device.DeviceCategory
 import com.android.axion.axionfx.device.DeviceProfile
 import com.android.axion.axionfx.device.DeviceProfileManager
-import com.android.axion.platform.AxPlatformClient
+import java.util.concurrent.Executor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,7 +45,6 @@ import kotlinx.coroutines.flow.asStateFlow
 class AxionFxService : Service() {
 
     private lateinit var prefs: SharedPreferences
-    private var mediaOnlyMode = false
 
     private val routingThread = HandlerThread("AxionFxRouting").apply { start() }
     private val routingHandler = Handler(routingThread.looper)
@@ -65,28 +63,6 @@ class AxionFxService : Service() {
         }
     }
 
-    private val platformListener = object : AxPlatformClient.Listener() {
-        override fun onMediaStateChanged(
-            playing: Boolean, track: String, artist: String, packageName: String
-        ) {
-            if (!mediaOnlyMode) return
-            val wasPlaying = _mediaPlaying.value
-            if (playing == wasPlaying) return
-            _mediaPlaying.value = playing
-            if (playing) {
-                AxionFxController.attachSession(0)
-                AxionFxController.setMasterEnabled(true)
-                restoreSettings()
-                updateNotification(true)
-            } else {
-                AxionFxController.setMasterEnabled(false)
-                AxionFxController.releaseAll()
-                updateNotification(false)
-            }
-            Log.d(TAG, "Media-only: playing=$playing pkg=$packageName")
-        }
-    }
-
     override fun onCreate() {
         super.onCreate()
         instance = this
@@ -95,7 +71,6 @@ class AxionFxService : Service() {
         startForeground(NOTIFICATION_ID, buildNotification())
         AxionFxController.attachSession(0)
         restoreSettings()
-        setupMediaOnlyMode()
         _autoSwitchEnabled.value = prefs.getBoolean(KEY_AUTO_SWITCH, true)
         audioManager?.registerAudioDeviceCallback(deviceCallback, routingHandler)
         scheduleRoutingEval()
@@ -111,8 +86,7 @@ class AxionFxService : Service() {
             }
         }
         val masterEnabled = prefs.getBoolean(KEY_MASTER_ENABLED, true)
-        val mediaOnly = prefs.getBoolean(KEY_MEDIA_ONLY, false)
-        if (!masterEnabled && !mediaOnly) {
+        if (!masterEnabled) {
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY
@@ -127,24 +101,8 @@ class AxionFxService : Service() {
         audioManager?.unregisterAudioDeviceCallback(deviceCallback)
         routingHandler.removeCallbacks(evalRunnable)
         routingThread.quitSafely()
-        AxPlatformClient.getInstance().removeListener(platformListener)
         AxionFxController.releaseAll()
         super.onDestroy()
-    }
-
-    private fun setupMediaOnlyMode() {
-        mediaOnlyMode = prefs.getBoolean(KEY_MEDIA_ONLY, false)
-        if (mediaOnlyMode) {
-            val client = AxPlatformClient.getInstance()
-            client.init(this)
-            client.addListener(platformListener)
-            _mediaPlaying.value = client.isMediaPlaying
-            AxionFxController.setMasterEnabled(_mediaPlaying.value)
-            if (!_mediaPlaying.value) {
-                AxionFxController.releaseAll()
-                updateNotification(false)
-            }
-        }
     }
 
     fun setAutoSwitchEnabled(enabled: Boolean) {
@@ -188,21 +146,6 @@ class AxionFxService : Service() {
             if (profile is DeviceProfile.Fixed) lastAppliedCategory = profile.category
         }
         return ok
-    }
-
-    fun updateMediaOnlyMode(enabled: Boolean) {
-        mediaOnlyMode = enabled
-        prefs.edit().putBoolean(KEY_MEDIA_ONLY, enabled).apply()
-        val client = AxPlatformClient.getInstance()
-        if (enabled) {
-            client.init(this)
-            client.addListener(platformListener)
-            _mediaPlaying.value = client.isMediaPlaying
-            AxionFxController.setMasterEnabled(_mediaPlaying.value)
-        } else {
-            client.removeListener(platformListener)
-            AxionFxController.setMasterEnabled(prefs.getBoolean(KEY_MASTER_ENABLED, true))
-        }
     }
 
     internal fun restoreSettings() {
@@ -377,8 +320,7 @@ class AxionFxService : Service() {
         fun start(context: Context) {
             val prefs = getPrefs(context)
             val masterEnabled = prefs.getBoolean(KEY_MASTER_ENABLED, true)
-            val mediaOnly = prefs.getBoolean(KEY_MEDIA_ONLY, false)
-            if (!masterEnabled && !mediaOnly) return
+            if (!masterEnabled) return
             context.startForegroundService(Intent(context, AxionFxService::class.java))
         }
 
